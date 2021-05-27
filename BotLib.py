@@ -1,6 +1,5 @@
 #CrystalPepsi Bot implementation
-import os
-import time
+import os, time, random
 
 import discord
 from discord.ext import commands
@@ -10,34 +9,19 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 SERVER = os.getenv('DISCORD_SERVER')
 
-client = discord.Client()
-bot = commands.Bot(command_prefix='!')
+bot = commands.Bot(command_prefix='?')
 
-@client.event
-async def on_ready():
-    for server in client.guilds:
-        if server == SERVER:
-            break
-    #channel = discord.utils.get(server.text_channels, name="general")
-    #await channel.send('Crystal Pepsi Bot has arrived, beep boop or whatever')
-
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-
-    res = ["It tastes like no other!", "wut", 
-    "This is your reminder to drink about 8oz of Crystal Pepsi to maintain optimal hydration."]
-    if message.content == '!crystalpepsi':
-        await message.channel.send(res[0])
-    elif message.content == '!wut':
-        for i in range(15):
-            await message.channel.send(res[1])
+@bot.command(name='wut', help=' -- Speaks the language of Nick')
+async def wut(ctx):
+     for i in range(15):
+            await ctx.channel.send('wut')
             time.sleep(1)
-    elif message.content == '!hydrate':
-        await message.channel.send(res[2])
+
+@bot.command(name='odds', help=' -- Play What are the Odds')
+async def the_odds(ctx, odds: int, pick: int):
+    rnd = random.randint(0, odds)
+    res='Your pick: {} \nBot pick: {} '.format(pick, rnd)
+    await ctx.send(res)
 
 
-
-
-client.run(TOKEN)
+bot.run(TOKEN)
