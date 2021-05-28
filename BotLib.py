@@ -1,15 +1,40 @@
 #CrystalPepsi Bot implementation
-import os, time, random
-
-import discord
+import os, time, random, discord
+from UserStats import UserStats
 from discord.ext import commands
 from dotenv import load_dotenv
 
 load_dotenv()
+
+intents = discord.Intents.all()
 TOKEN = os.getenv('DISCORD_TOKEN')
 SERVER = os.getenv('DISCORD_SERVER')
 
-bot = commands.Bot(command_prefix='?')
+bot = commands.Bot(command_prefix='?', intents=intents)
+
+#Global variables
+member_statistics = []
+
+@bot.event
+async def on_ready():
+    for server in bot.guilds:
+        if server == SERVER:
+            break 
+
+    print("Connected to " + server.name)
+
+    print("Members: ")
+    for member in server.members:
+        u = UserStats(str(member), 100)
+        member_statistics.append(u)
+        print(member)
+
+@bot.command(name='stats', help = ' -- Get your personal member statistics')
+async def stats(ctx):
+    for member in member_statistics:
+        if str(ctx.message.author) == member.uname:
+            await ctx.channel.send(member.output())
+
 
 @bot.command(name='wut', help=' -- Speaks the language of Nick')
 async def wut(ctx):
