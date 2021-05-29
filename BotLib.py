@@ -25,16 +25,26 @@ async def on_ready():
 
     print("Members: ")
     for member in server.members:
-        u = UserStats(str(member), 100)
-        member_statistics.append(u)
+        user = UserStats(str(member), 100)
+        member_statistics.append(user)
         print(member)
+
+@bot.event
+async def on_message(message):
+    for member in member_statistics:
+        if str(message.author) == member.uname:
+            break
+        
+    member.add_score(1)
+    await bot.process_commands(message)
 
 @bot.command(name='stats', help = ' -- Get your personal member statistics')
 async def stats(ctx):
     for member in member_statistics:
         if str(ctx.message.author) == member.uname:
-            await ctx.channel.send(member.output())
+            break
 
+    await ctx.channel.send(member.output())
 
 @bot.command(name='wut', help=' -- Speaks the language of Nick')
 async def wut(ctx):

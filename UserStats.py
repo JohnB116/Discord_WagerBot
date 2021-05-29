@@ -7,3 +7,5 @@ class UserStats:
     def output(self):
         return "Stats for: {}\nPoints: {}".format(self.uname, self.score)
 
+    def add_score(self, points):
+        self.score += points
