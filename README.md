@@ -1,1 +1,1 @@
-# PersonalDiscordBot
+# WagerBot
