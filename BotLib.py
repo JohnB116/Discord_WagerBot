@@ -60,7 +60,7 @@ async def on_message(message):
         
     #Score updates and tracking
     member.add_score(1)
-    member_statistics.sort(key=lambda x: x.score)
+    member_statistics.sort(key=lambda x: x.score, reverse=True)
 
     await bot.process_commands(message)
 
@@ -72,26 +72,79 @@ async def stats(ctx):
 
     await ctx.channel.send(member.output())
 
+@bot.command(name='rankings', help = ' -- Display server seniority/rankings')
+async def rankings(ctx):
+
+    idx = 1
+    for m in member_statistics:
+        await(ctx.channel.send(f'#{idx}: {m.uname} --> {m.score}'))
+        idx += 1
+
+
 @bot.command(name='hilo', help = ' -- Play Hi-Lo and Stake points ( e.g. --> ?hilo 15 )')
 async def hilo(ctx, points: int):
     
+    #Member find and preliminary error handling
+    for member in member_statistics:
+        if str(ctx.author) == member.uname:
+            break
+    if member.score <= points:
+        await ctx.channel.send('You do not have enough points for this bet')
+        return 
+
     rand_val = random.randrange(len(card_deck))
     await ctx.channel.send(file=card_deck[rand_val])
 
     val_ch = card_deck[rand_val].filename[0]
     value = values[val_ch]
-    print(value)
+    
+    await ctx.channel.send(f'You have {value}, higher/same(h) or lower/same(l)?')
     
     def check(msg):
-        return msg.author == ctx.author and msg.channel == ctx.channel 
+        return msg.author == ctx.author and msg.channel == ctx.channel
 
     try:
         msg = await bot.wait_for("message", check=check, timeout=30)
+
     except asyncio.TimeoutError:
         await ctx.send(f'{ctx.author}, you did not make reply in time. You will be refunded')
+        return 
+
     else:
-        print(msg.content)
-        #Here we will handle the cases
+        selection = str(msg.content).lower()
+        if selection == 'h':
+            rand_val = random.randrange(len(card_deck))
+            await ctx.channel.send(file=card_deck[rand_val])
+
+            val_ch = card_deck[rand_val].filename[0]
+            value_next = values[val_ch]
+
+            if value_next >= value:
+                await ctx.channel.send('Winner!')
+                member.score += points
+            else:
+                await ctx.channel.send('You lose!')
+                member.score -= points
+            return 
+
+        elif selection == 'l':
+            rand_val = random.randrange(len(card_deck))
+            await ctx.channel.send(file=card_deck[rand_val])
+
+            val_ch = card_deck[rand_val].filename[0]
+            value_next = values[val_ch]
+
+            if value_next <= value:
+                await ctx.channel.send('Winner!')
+                member.score += points
+            else:
+                await ctx.channel.send('You lose!')
+                member.score -= points
+            return 
+
+        else:
+            await ctx.channel.send("Not a valid selection, refund")
+
 
 
 bot.run(TOKEN)
