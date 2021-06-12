@@ -1,7 +1,5 @@
-#WagersBot 
-import asyncio
+import os, time, random, discord, math, asyncio
 from logging import NullHandler
-import os, time, random, discord, math
 from discord.ext.commands.core import check
 from discord.file import File
 from UserStats import UserStats
@@ -75,7 +73,7 @@ async def rankings(ctx):
 
     idx = 1
     for m in member_statistics:
-        #I know this is a cheap way to check for a bot, I'll try and change this later
+        #I realize this is a cheap way to check for a bot, I'll try and change this later
         if 'bot' in m.uname.lower():
             continue
         await(ctx.channel.send(f'#{idx}: {m.uname} --> {m.score}'))
@@ -95,7 +93,6 @@ async def gift(ctx, user: str, points: int):
                 await ctx.channel.send(f'Nice try {recipient.uname}')
                 return
             else:
-                found = True
                 recipient.score += points
                 member.score -= points
                 await ctx.channel.send(f'@{member.uname} sent @{recipient.uname} {points} points')
