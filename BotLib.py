@@ -61,7 +61,6 @@ async def on_message(message):
         
     #Score updates and tracking
     #member.add_score(1)
-    member_statistics.sort(key=lambda x: x.score, reverse=True)
 
     await bot.process_commands(message)
 
@@ -75,6 +74,9 @@ async def stats(ctx):
 
 @bot.command(name='rankings', help = ' -- Display server seniority/rankings')
 async def rankings(ctx):
+
+    member_statistics.sort(key=lambda x: x.score, reverse=True)
+
     idx = 1
     for m in member_statistics:
         #I know this is a cheap way to check for a bot, I'll try and change this later
