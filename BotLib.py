@@ -1,5 +1,6 @@
 #WagersBot 
 import asyncio
+from logging import NullHandler
 import os, time, random, discord, math
 from discord.ext.commands.core import check
 from discord.file import File
@@ -84,6 +85,29 @@ async def rankings(ctx):
             continue
         await(ctx.channel.send(f'#{idx}: {m.uname} --> {m.score}'))
         idx += 1
+
+@bot.command(name='gift', help = ' -- Give points to another member ( e.g. --> ?gift username 10 )')
+async def gift(ctx, user: str, points: int):
+    
+    #Member find
+    for member in member_statistics:
+        if str(ctx.author) == member.uname:
+            break
+    #Recipient find
+    for recipient in member_statistics:
+        if user == recipient.uname:
+            if recipient.uname == str(ctx.author):
+                await ctx.channel.send(f'Nice try {recipient.uname}')
+                return
+            else:
+                found = True
+                recipient.score += points
+                member.score -= points
+                await ctx.channel.send(f'@{member.uname} sent @{recipient.uname} {points} points')
+                return
+    await ctx.channel.send(f'@{member.uname} , the user you entered is not found')
+    return
+    
 
 @bot.command(name='hilo', help = ' -- Play Hi-Lo and stake points ( e.g. --> ?hilo 15 )')
 async def hilo(ctx, bet: int):
