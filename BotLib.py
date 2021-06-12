@@ -41,11 +41,6 @@ async def on_ready():
         if server == SERVER:
             break 
 
-    #Initialize card deck
-    with os.scandir('cards_png') as cards:
-        for card in cards:
-            card_deck.append(File(card))
-
     #Initialize member list
     print("Connected to " + server.name)
     print("Members: ")
@@ -117,9 +112,14 @@ async def hilo(ctx, bet: int):
         if str(ctx.author) == member.uname:
             break
     if member.score <= bet:
-        await ctx.channel.send('You do not have enough points for this bet')
+        await ctx.channel.send(f'@{member.uname} , You do not have enough points for this bet')
         return 
     points = 0
+
+    #Initialize card deck
+    with os.scandir('cards_png') as cards:
+        for card in cards:
+            card_deck.append(File(card))
 
     while(1):
         #Send card and value
@@ -128,7 +128,7 @@ async def hilo(ctx, bet: int):
         val_ch = card_deck[rand_val].filename[0]
         value = values[val_ch]
         
-        await ctx.channel.send(f'You have {value}, higher/same(h), lower/same(l), or cash out(c)?')
+        await ctx.channel.send(f'@{member.uname} , You have {value}, higher/same(h), lower/same(l), or cash out(c)?')
         
         def check(msg):
             return msg.author == ctx.author and msg.channel == ctx.channel
@@ -137,7 +137,7 @@ async def hilo(ctx, bet: int):
         try:
             msg = await bot.wait_for("message", check=check, timeout=30)
         except asyncio.TimeoutError:
-            await ctx.send(f'{ctx.author}, you did not make reply in time. You will be refunded')
+            await ctx.send(f'@{member.uname} , you did not make reply in time. You will be refunded')
             return 
         else:
             #Handle replies and check for invalid characters
@@ -149,10 +149,10 @@ async def hilo(ctx, bet: int):
                 value_next = values[val_ch]
 
                 if value_next >= value:
-                    await ctx.channel.send('Winner!')
+                    await ctx.channel.send(f'@{member.uname} , Winner!')
                     points += math.ceil(bet/2)
                 else:
-                    await ctx.channel.send('You lose!')
+                    await ctx.channel.send(f'@{member.uname} , You lose!')
                     member.score -= bet
                     return
                 
@@ -163,18 +163,18 @@ async def hilo(ctx, bet: int):
                 value_next = values[val_ch]
 
                 if value_next <= value:
-                    await ctx.channel.send('Winner!')
+                    await ctx.channel.send(f'@{member.uname} , Winner!')
                     points += math.ceil(bet/2)
                 else:
-                    await ctx.channel.send('You lose!')
+                    await ctx.channel.send(f'@{member.uname} , You lose!')
                     member.score -= points
                     return
             elif selection.lower() == 'c':
                 member.score += points
-                await ctx.channel.send(f'{ctx.author} won {points} points')
+                await ctx.channel.send(f'@{ctx.author} won {points} points')
                 return        
             else:
-                await ctx.channel.send("Not a valid selection, refund")
+                await ctx.channel.send(f'@{member.uname} , not a valid selection, refund')
 
 #TODO: Round up multiplier precision to a point
 @bot.command(name='limbo', help = ' -- Play Limbo and stake points ( e.g. --> ?limbo 15 )')
@@ -203,6 +203,9 @@ async def limbo(ctx, bet: int):
             return 
         else:
             mult = float(msg.content)
+            if mult <= 1.00 or mult > 10.00:
+                await ctx.channel.send(f'@{member.uname} , that is not a valid multiplier, refund')
+                return
             res = 0
             #generate multiplier
             weight = random.randint(0, 2)
@@ -216,7 +219,7 @@ async def limbo(ctx, bet: int):
                 res = round(res, 2)
 
             time.sleep(1)    
-            await ctx.channel.send(f'Your mulitpler: {mult}x\nBot multiplier: {res}x')
+            await ctx.channel.send(f'@{ctx.author} \nYour mulitpler: {mult}x\nBot multiplier: {res}x')
 
             if res >= mult:
                 points = math.ceil(bet*mult)
