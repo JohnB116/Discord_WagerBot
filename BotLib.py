@@ -1,4 +1,4 @@
-#WagersBot implementation
+#WagersBot 
 import asyncio
 import os, time, random, discord, math
 from discord.ext.commands.core import check
@@ -77,10 +77,13 @@ async def stats(ctx):
 async def rankings(ctx):
     idx = 1
     for m in member_statistics:
+        #I know this is a cheap way to check for a bot, I'll try and change this later
+        if 'bot' in m.uname.lower():
+            continue
         await(ctx.channel.send(f'#{idx}: {m.uname} --> {m.score}'))
         idx += 1
 
-@bot.command(name='hilo', help = ' -- Play Hi-Lo and Stake points ( e.g. --> ?hilo 15 )')
+@bot.command(name='hilo', help = ' -- Play Hi-Lo and stake points ( e.g. --> ?hilo 15 )')
 async def hilo(ctx, bet: int):
     
     #Member find and preliminary error handling
@@ -147,5 +150,57 @@ async def hilo(ctx, bet: int):
             else:
                 await ctx.channel.send("Not a valid selection, refund")
 
+#TODO: Round up multiplier precision to a point
+@bot.command(name='limbo', help = ' -- Play Limbo and stake points ( e.g. --> ?limbo 15 )')
+async def limbo(ctx, bet: int):
+    
+    #Member find and preliminary error handling
+    for member in member_statistics:
+        if str(ctx.author) == member.uname:
+            break
+    if member.score <= bet:
+        await ctx.channel.send('You do not have enough points for this bet')
+        return 
+
+    while(1):
+        
+        await ctx.channel.send(f'@{member.uname}, pick your multiplier(1.01-10)')
+        
+        def check(msg):
+            return msg.author == ctx.author and msg.channel == ctx.channel
+
+        #Exception handler for no response
+        try:
+            msg = await bot.wait_for("message", check=check, timeout=30)
+        except asyncio.TimeoutError:
+            await ctx.send(f'{ctx.author}, you did not make reply in time. You will be refunded')
+            return 
+        else:
+            mult = float(msg.content)
+            res = 0
+            #generate multiplier
+            weight = random.randint(0, 2)
+            if weight == 0:
+                res = 1.00
+            elif weight == 1:
+                res = random.uniform(1.01, 2.01)
+                res = round(res, 2)
+            else:
+                res = random.uniform(2.02, 10.01)
+                res = round(res, 2)
+
+            time.sleep(1)    
+            await ctx.channel.send(f'Your mulitpler: {mult}x\nBot multiplier: {res}x')
+
+            if res >= mult:
+                points = math.ceil(bet*mult)
+                member.score += points
+                await ctx.channel.send(f'{member.uname} won {points} points')
+            else:
+                member.score -= bet
+                await ctx.channel.send(f'{member.uname} lost {bet} points')
+            
+            return 
+    
 
 bot.run(TOKEN)
