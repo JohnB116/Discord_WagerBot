@@ -43,7 +43,8 @@ async def on_ready():
     print("Connected to " + server.name)
     print("Members: ")
     for member in server.members:
-        user = UserStats(str(member), 100)
+        is_bot = member.bot
+        user = UserStats(str(member), 100, is_bot)
         member_statistics.append(user)
         print(member)
 
@@ -74,7 +75,7 @@ async def rankings(ctx):
     idx = 1
     for m in member_statistics:
         #I realize this is a cheap way to check for a bot, I'll try and change this later
-        if 'bot' in m.uname.lower():
+        if m.bot:
             continue
         await(ctx.channel.send(f'#{idx}: {m.uname} --> {m.score}'))
         idx += 1
@@ -167,7 +168,7 @@ async def hilo(ctx, bet: int):
                 if value_next <= value:
                     await ctx.channel.send(f'@{member.uname} , Winner!')
                     points += math.ceil(bet/2)
-                    value = value_next
+                    
                 else:
                     await ctx.channel.send(f'@{member.uname} , You lose!')
                     member.score -= points

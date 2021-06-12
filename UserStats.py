@@ -1,8 +1,9 @@
 class UserStats:
 
-    def __init__(self, uname, score):
+    def __init__(self, uname, score, bot):
         self.uname = uname
         self.score = score
+        self.bot = bot
 
     def output(self):
         return "Stats for: {}\nPoints: {}".format(self.uname, self.score)
