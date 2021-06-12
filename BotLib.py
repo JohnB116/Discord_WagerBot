@@ -108,6 +108,7 @@ async def hilo(ctx, bet: int):
     for member in member_statistics:
         if str(ctx.author) == member.uname:
             break
+    
     if member.score <= bet:
         await ctx.channel.send(f'@{member.uname} , You do not have enough points for this bet')
         return 
@@ -118,12 +119,13 @@ async def hilo(ctx, bet: int):
         for card in cards:
             card_deck.append(File(card))
 
+    #Send card and value
+    rand_val = random.randrange(len(card_deck))
+    await ctx.channel.send(file=card_deck[rand_val])
+    val_ch = card_deck[rand_val].filename[0]
+    value = values[val_ch]
+
     while(1):
-        #Send card and value
-        rand_val = random.randrange(len(card_deck))
-        await ctx.channel.send(file=card_deck[rand_val])
-        val_ch = card_deck[rand_val].filename[0]
-        value = values[val_ch]
         
         await ctx.channel.send(f'@{member.uname} , You have {value}, higher/same(h), lower/same(l), or cash out(c)?')
         
@@ -133,9 +135,11 @@ async def hilo(ctx, bet: int):
         #Exception handler for no response
         try:
             msg = await bot.wait_for("message", check=check, timeout=30)
+
         except asyncio.TimeoutError:
             await ctx.send(f'@{member.uname} , you did not make reply in time. You will be refunded')
             return 
+
         else:
             #Handle replies and check for invalid characters
             selection = str(msg.content).lower()
@@ -148,11 +152,12 @@ async def hilo(ctx, bet: int):
                 if value_next >= value:
                     await ctx.channel.send(f'@{member.uname} , Winner!')
                     points += math.ceil(bet/2)
+                    value = value_next
                 else:
                     await ctx.channel.send(f'@{member.uname} , You lose!')
                     member.score -= bet
-                    return
-                
+                    return   
+
             elif selection.lower() == 'l':
                 rand_val = random.randrange(len(card_deck))
                 await ctx.channel.send(file=card_deck[rand_val])
@@ -162,14 +167,17 @@ async def hilo(ctx, bet: int):
                 if value_next <= value:
                     await ctx.channel.send(f'@{member.uname} , Winner!')
                     points += math.ceil(bet/2)
+                    value = value_next
                 else:
                     await ctx.channel.send(f'@{member.uname} , You lose!')
                     member.score -= points
                     return
+
             elif selection.lower() == 'c':
                 member.score += points
                 await ctx.channel.send(f'@{ctx.author} won {points} points')
-                return        
+                return  
+
             else:
                 await ctx.channel.send(f'@{member.uname} , not a valid selection, refund')
 
@@ -186,7 +194,6 @@ async def limbo(ctx, bet: int):
         return 
 
     while(1):
-        
         await ctx.channel.send(f'@{member.uname}, pick your multiplier(1.01-10)')
         
         def check(msg):
@@ -195,9 +202,11 @@ async def limbo(ctx, bet: int):
         #Exception handler for no response
         try:
             msg = await bot.wait_for("message", check=check, timeout=30)
+        
         except asyncio.TimeoutError:
             await ctx.send(f'{ctx.author}, you did not make reply in time. You will be refunded')
             return 
+        
         else:
             mult = float(msg.content)
             if mult <= 1.00 or mult > 10.00:
@@ -208,9 +217,11 @@ async def limbo(ctx, bet: int):
             weight = random.randint(0, 2)
             if weight == 0:
                 res = 1.00
+
             elif weight == 1:
                 res = random.uniform(1.01, 2.01)
                 res = round(res, 2)
+
             else:
                 res = random.uniform(2.02, 10.01)
                 res = round(res, 2)
@@ -222,6 +233,7 @@ async def limbo(ctx, bet: int):
                 points = math.ceil(bet*mult)
                 member.score += points
                 await ctx.channel.send(f'{member.uname} won {points} points')
+
             else:
                 member.score -= bet
                 await ctx.channel.send(f'{member.uname} lost {bet} points')
